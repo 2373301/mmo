@@ -271,7 +271,7 @@ private:
 
     try
     {
-      size_t cln_count = 100;
+      size_t cln_count = 1;
       errcode_t ec;
       attributes attrs;
       attrs.lg_ = lg;
