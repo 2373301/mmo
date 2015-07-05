@@ -59,7 +59,7 @@ public:
 
 public:
   template <typename Actor>
-  stream(Actor a, context_t& ctx)
+  stream(Actor& a, context_t& ctx)
     : addon_t(a)
     , snd_(base_t::get_strand())
     , skt_opt_(boost::in_place(boost::ref(snd_.get_io_service()), boost::ref(ctx)))
@@ -74,7 +74,7 @@ public:
   }
   
   template <typename Actor>
-  stream(Actor a, boost::shared_ptr<impl_t> skt)
+  stream(Actor& a, boost::shared_ptr<impl_t> skt)
     : addon_t(a)
     , snd_(base_t::get_strand())
     , skt_ptr_(skt)
@@ -283,32 +283,6 @@ public:
           scp_.get()->get_attachment()[ha_recv],
           boost::bind(
             &self_t::handle_recv_length, scp_.get(),
-            boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred
-            )
-          )
-        )
-      );
-    recving_ = true;
-  }
-
-  template <typename Allocator, typename Expr>
-  void async_read_until(
-    boost::asio::basic_streambuf<Allocator>& b, 
-    Expr const& expr, 
-    message const& msg = message(as_recv_until)
-    )
-  {
-    GCE_ASSERT(!recving_);
-    GCE_ASSERT(!conning_);
-
-    recv_msg_ = msg;
-    boost::asio::async_read_until(
-      *impl_, b, expr,
-      snd_.wrap(
-        gce::detail::make_asio_alloc_handler(
-          scp_.get()->get_attachment()[ha_recv],
-          boost::bind(
-            &self_t::handle_recv, scp_.get(),
             boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred
             )
           )
@@ -529,7 +503,7 @@ private:
   {
     message msg(m);
     m = msg_nil_;
-    base_t::send2actor(msg);
+    send2actor(msg);
   }
 
 private:

@@ -57,11 +57,6 @@ public:
       return p_;
     }
 
-    bool verify() const
-    {
-      return p_ != 0;
-    }
-
     attachment_t& get_attachment()
     {
       return am_;
