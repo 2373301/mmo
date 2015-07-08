@@ -1,0 +1,10 @@
+game client		GC
+any terminal	XX
+any server		XS
+guid server		GD
+base server		BS
+data server		DS
+set  server		SS
+grid server		GS
+router server	RS
+

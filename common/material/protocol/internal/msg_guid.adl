@@ -1,0 +1,14 @@
+namespace = typed.protocol;
+
+// 向 guid server 请求 guid分配
+xs2gd_guid_req
+{
+	uint32	req_no;		// 请求的数量
+}
+
+gd2xs_guid_ack
+{
+	uint32 seed;			// 种子
+	uint32 no;				// 返回的数量
+	uint64 start_index;		// 索引开始的位置
+}
