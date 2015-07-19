@@ -12,10 +12,10 @@ void guid_server(gce::stackful_actor self, std::string& service_name, config& cf
         guid_alloactor guid_alloc(cfg.seed, cfg.index);
         while (true)
         {
-            typed::protocol::xs2gd_guid_req req;
+            p::xs2gd_guid_req req;
             gce::aid_t sender  = self->match(XS2GD_GUID_REQ).recv(req);
             
-            typed::protocol::gd2xs_guid_ack ack;
+            p::gd2xs_guid_ack ack;
             guid_alloc.generate_request(req.req_no, ack.no, ack.start_index);
             ack.seed = guid_alloc.seed_;
             self->send(sender, GD2XS_GUID_ACK, ack);
