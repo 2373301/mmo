@@ -3,7 +3,7 @@
 
 #include <adata.hpp>
 
-namespace typed {namespace protocol {
+namespace p {
   struct xs2gd_guid_req
   {
     uint32_t req_no;
@@ -24,12 +24,12 @@ namespace typed {namespace protocol {
     {}
   };
 
-}}
+}
 
 namespace adata
 {
   template<typename stream_ty>
-  ADATA_INLINE void read( stream_ty& stream, ::typed::protocol::xs2gd_guid_req& value)
+  ADATA_INLINE void read( stream_ty& stream, ::p::xs2gd_guid_req& value)
   {
     ::std::size_t offset = stream.read_length();
     uint64_t tag = 0;
@@ -49,13 +49,13 @@ namespace adata
   }
 
   template <typename stream_ty>
-  ADATA_INLINE void skip_read(stream_ty& stream, ::typed::protocol::xs2gd_guid_req* value)
+  ADATA_INLINE void skip_read(stream_ty& stream, ::p::xs2gd_guid_req* value)
   {
     (value);
     skip_read_compatible(stream);
   }
 
-  ADATA_INLINE int32_t size_of(const ::typed::protocol::xs2gd_guid_req& value)
+  ADATA_INLINE int32_t size_of(const ::p::xs2gd_guid_req& value)
   {
     int32_t size = 0;
     uint64_t tag = 1ULL;
@@ -68,7 +68,7 @@ namespace adata
   }
 
   template<typename stream_ty>
-  ADATA_INLINE void write(stream_ty& stream , const ::typed::protocol::xs2gd_guid_req&value)
+  ADATA_INLINE void write(stream_ty& stream , const ::p::xs2gd_guid_req&value)
   {
     uint64_t tag = 1ULL;
     write(stream,tag);
@@ -80,7 +80,7 @@ namespace adata
   }
 
   template<typename stream_ty>
-  ADATA_INLINE void read( stream_ty& stream, ::typed::protocol::gd2xs_guid_ack& value)
+  ADATA_INLINE void read( stream_ty& stream, ::p::gd2xs_guid_ack& value)
   {
     ::std::size_t offset = stream.read_length();
     uint64_t tag = 0;
@@ -102,13 +102,13 @@ namespace adata
   }
 
   template <typename stream_ty>
-  ADATA_INLINE void skip_read(stream_ty& stream, ::typed::protocol::gd2xs_guid_ack* value)
+  ADATA_INLINE void skip_read(stream_ty& stream, ::p::gd2xs_guid_ack* value)
   {
     (value);
     skip_read_compatible(stream);
   }
 
-  ADATA_INLINE int32_t size_of(const ::typed::protocol::gd2xs_guid_ack& value)
+  ADATA_INLINE int32_t size_of(const ::p::gd2xs_guid_ack& value)
   {
     int32_t size = 0;
     uint64_t tag = 7ULL;
@@ -127,7 +127,7 @@ namespace adata
   }
 
   template<typename stream_ty>
-  ADATA_INLINE void write(stream_ty& stream , const ::typed::protocol::gd2xs_guid_ack&value)
+  ADATA_INLINE void write(stream_ty& stream , const ::p::gd2xs_guid_ack&value)
   {
     uint64_t tag = 7ULL;
     write(stream,tag);

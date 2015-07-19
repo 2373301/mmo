@@ -1,4 +1,4 @@
-namespace = typed.protocol;
+namespace = p;
 
 // 向 guid server 请求 guid分配
 xs2gd_guid_req
