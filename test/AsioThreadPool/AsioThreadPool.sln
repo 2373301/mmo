@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AsioThreadPool", "AsioThreadPool.vcproj", "{39FADDDC-2147-4F4C-A689-E05CFCB02132}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{39FADDDC-2147-4F4C-A689-E05CFCB02132}.Debug|Win32.ActiveCfg = Debug|Win32
+		{39FADDDC-2147-4F4C-A689-E05CFCB02132}.Debug|Win32.Build.0 = Debug|Win32
+		{39FADDDC-2147-4F4C-A689-E05CFCB02132}.Release|Win32.ActiveCfg = Release|Win32
+		{39FADDDC-2147-4F4C-A689-E05CFCB02132}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
