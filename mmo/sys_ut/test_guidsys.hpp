@@ -50,10 +50,10 @@ private:
 
       for(int i = 0; i < 1000; i++)
       {
-          typed::protocol::xs2gd_guid_req req;
+          p::xs2gd_guid_req req;
           req.req_no = 5000;
           base2->send(guidsys, XS2GD_GUID_REQ, req);
-          typed::protocol::gd2xs_guid_ack ack;
+          p::gd2xs_guid_ack ack;
           base2->match(GD2XS_GUID_ACK).recv(ack);
           std::cout << "received, index: " << ack.start_index << std::endl;
       }

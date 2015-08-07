@@ -4,7 +4,7 @@
 #include <adata.hpp>
 
 namespace p {
-  struct xs2ds_entity_req_type
+  struct cache_req_type
   {
     uint8_t create;
     uint8_t load;
@@ -14,8 +14,8 @@ namespace p {
     uint8_t remove;
     uint8_t one_off;
     uint8_t create_flush;
-    uint8_t del;
-    xs2ds_entity_req_type()
+    uint8_t unload;
+    cache_req_type()
     :    create(0),
     load(1),
     flush(2),
@@ -24,19 +24,17 @@ namespace p {
     remove(5),
     one_off(6),
     create_flush(7),
-    del(8)
+    unload(8)
     {}
   };
 
   struct xs2ds_entity_req
   {
     uint8_t req_type;
-    uint64_t owner_guid;
     uint64_t req_guid;
     ::std::vector< uint8_t > data;
     xs2ds_entity_req()
     :    req_type(0),
-    owner_guid(0ULL),
     req_guid(0ULL)
     {}
   };
@@ -45,13 +43,11 @@ namespace p {
   {
     uint8_t req_type;
     uint8_t result;
-    uint64_t owner_guid;
     uint64_t req_guid;
     ::std::vector< uint8_t > data;
     ds2xs_entity_ack()
     :    req_type(0),
     result(0),
-    owner_guid(0ULL),
     req_guid(0ULL)
     {}
   };
@@ -61,7 +57,7 @@ namespace p {
 namespace adata
 {
   template<typename stream_ty>
-  ADATA_INLINE void read( stream_ty& stream, ::p::xs2ds_entity_req_type& value)
+  ADATA_INLINE void read( stream_ty& stream, ::p::cache_req_type& value)
   {
     ::std::size_t offset = stream.read_length();
     uint64_t tag = 0;
@@ -79,7 +75,7 @@ namespace adata
     if(tag&32ULL)    {read(stream,value.remove);{if(stream.error()){stream.trace_error("remove",-1);return;}}}
     if(tag&64ULL)    {read(stream,value.one_off);{if(stream.error()){stream.trace_error("one_off",-1);return;}}}
     if(tag&128ULL)    {read(stream,value.create_flush);{if(stream.error()){stream.trace_error("create_flush",-1);return;}}}
-    if(tag&256ULL)    {read(stream,value.del);{if(stream.error()){stream.trace_error("del",-1);return;}}}
+    if(tag&256ULL)    {read(stream,value.unload);{if(stream.error()){stream.trace_error("unload",-1);return;}}}
     if(len_tag >= 0)
     {
       ::std::size_t read_len = stream.read_length() - offset;
@@ -89,13 +85,13 @@ namespace adata
   }
 
   template <typename stream_ty>
-  ADATA_INLINE void skip_read(stream_ty& stream, ::p::xs2ds_entity_req_type* value)
+  ADATA_INLINE void skip_read(stream_ty& stream, ::p::cache_req_type* value)
   {
     (value);
     skip_read_compatible(stream);
   }
 
-  ADATA_INLINE int32_t size_of(const ::p::xs2ds_entity_req_type& value)
+  ADATA_INLINE int32_t size_of(const ::p::cache_req_type& value)
   {
     int32_t size = 0;
     uint64_t tag = 511ULL;
@@ -124,7 +120,7 @@ namespace adata
       size += size_of(value.create_flush);
     }
     {
-      size += size_of(value.del);
+      size += size_of(value.unload);
     }
     size += size_of(tag);
     size += size_of(size + size_of(size));
@@ -132,7 +128,7 @@ namespace adata
   }
 
   template<typename stream_ty>
-  ADATA_INLINE void write(stream_ty& stream , const ::p::xs2ds_entity_req_type&value)
+  ADATA_INLINE void write(stream_ty& stream , const ::p::cache_req_type&value)
   {
     uint64_t tag = 511ULL;
     write(stream,tag);
@@ -147,7 +143,7 @@ namespace adata
     {write(stream,value.remove);{if(stream.error()){stream.trace_error("remove",-1);return;}}}
     {write(stream,value.one_off);{if(stream.error()){stream.trace_error("one_off",-1);return;}}}
     {write(stream,value.create_flush);{if(stream.error()){stream.trace_error("create_flush",-1);return;}}}
-    {write(stream,value.del);{if(stream.error()){stream.trace_error("del",-1);return;}}}
+    {write(stream,value.unload);{if(stream.error()){stream.trace_error("unload",-1);return;}}}
     return;
   }
 
@@ -162,10 +158,9 @@ namespace adata
     read(stream,len_tag);
     if(stream.error()){return;}
 
-    if(tag&1ULL)    {read(stream,value.owner_guid);{if(stream.error()){stream.trace_error("owner_guid",-1);return;}}}
-    if(tag&2ULL)    {read(stream,value.req_guid);{if(stream.error()){stream.trace_error("req_guid",-1);return;}}}
-    if(tag&4ULL)    {read(stream,value.req_type);{if(stream.error()){stream.trace_error("req_type",-1);return;}}}
-    if(tag&8ULL)
+    if(tag&1ULL)    {read(stream,value.req_guid);{if(stream.error()){stream.trace_error("req_guid",-1);return;}}}
+    if(tag&2ULL)    {read(stream,value.req_type);{if(stream.error()){stream.trace_error("req_type",-1);return;}}}
+    if(tag&4ULL)
     {
       uint32_t len = check_read_size(stream);
       {if(stream.error()){stream.trace_error("data",-1);return;}}
@@ -194,18 +189,15 @@ namespace adata
   ADATA_INLINE int32_t size_of(const ::p::xs2ds_entity_req& value)
   {
     int32_t size = 0;
-    uint64_t tag = 7ULL;
-    if(!value.data.empty()){tag|=8ULL;}
-    {
-      size += size_of(value.owner_guid);
-    }
+    uint64_t tag = 3ULL;
+    if(!value.data.empty()){tag|=4ULL;}
     {
       size += size_of(value.req_guid);
     }
     {
       size += size_of(value.req_type);
     }
-    if(tag&8ULL)
+    if(tag&4ULL)
     {
       int32_t len = (int32_t)(value.data).size();
       size += size_of(len);
@@ -222,16 +214,15 @@ namespace adata
   template<typename stream_ty>
   ADATA_INLINE void write(stream_ty& stream , const ::p::xs2ds_entity_req&value)
   {
-    uint64_t tag = 7ULL;
-    if(!value.data.empty()){tag|=8ULL;}
+    uint64_t tag = 3ULL;
+    if(!value.data.empty()){tag|=4ULL;}
     write(stream,tag);
     if(stream.error()){return;}
     write(stream,size_of(value));
     if(stream.error()){return;}
-    {write(stream,value.owner_guid);{if(stream.error()){stream.trace_error("owner_guid",-1);return;}}}
     {write(stream,value.req_guid);{if(stream.error()){stream.trace_error("req_guid",-1);return;}}}
     {write(stream,value.req_type);{if(stream.error()){stream.trace_error("req_type",-1);return;}}}
-    if(tag&8ULL)
+    if(tag&4ULL)
     {
       uint32_t len = (uint32_t)(value.data).size();
       write(stream,len);
@@ -256,11 +247,10 @@ namespace adata
     read(stream,len_tag);
     if(stream.error()){return;}
 
-    if(tag&1ULL)    {read(stream,value.owner_guid);{if(stream.error()){stream.trace_error("owner_guid",-1);return;}}}
-    if(tag&2ULL)    {read(stream,value.req_guid);{if(stream.error()){stream.trace_error("req_guid",-1);return;}}}
-    if(tag&4ULL)    {read(stream,value.req_type);{if(stream.error()){stream.trace_error("req_type",-1);return;}}}
-    if(tag&8ULL)    {read(stream,value.result);{if(stream.error()){stream.trace_error("result",-1);return;}}}
-    if(tag&16ULL)
+    if(tag&1ULL)    {read(stream,value.req_guid);{if(stream.error()){stream.trace_error("req_guid",-1);return;}}}
+    if(tag&2ULL)    {read(stream,value.req_type);{if(stream.error()){stream.trace_error("req_type",-1);return;}}}
+    if(tag&4ULL)    {read(stream,value.result);{if(stream.error()){stream.trace_error("result",-1);return;}}}
+    if(tag&8ULL)
     {
       uint32_t len = check_read_size(stream);
       {if(stream.error()){stream.trace_error("data",-1);return;}}
@@ -289,11 +279,8 @@ namespace adata
   ADATA_INLINE int32_t size_of(const ::p::ds2xs_entity_ack& value)
   {
     int32_t size = 0;
-    uint64_t tag = 15ULL;
-    if(!value.data.empty()){tag|=16ULL;}
-    {
-      size += size_of(value.owner_guid);
-    }
+    uint64_t tag = 7ULL;
+    if(!value.data.empty()){tag|=8ULL;}
     {
       size += size_of(value.req_guid);
     }
@@ -303,7 +290,7 @@ namespace adata
     {
       size += size_of(value.result);
     }
-    if(tag&16ULL)
+    if(tag&8ULL)
     {
       int32_t len = (int32_t)(value.data).size();
       size += size_of(len);
@@ -320,17 +307,16 @@ namespace adata
   template<typename stream_ty>
   ADATA_INLINE void write(stream_ty& stream , const ::p::ds2xs_entity_ack&value)
   {
-    uint64_t tag = 15ULL;
-    if(!value.data.empty()){tag|=16ULL;}
+    uint64_t tag = 7ULL;
+    if(!value.data.empty()){tag|=8ULL;}
     write(stream,tag);
     if(stream.error()){return;}
     write(stream,size_of(value));
     if(stream.error()){return;}
-    {write(stream,value.owner_guid);{if(stream.error()){stream.trace_error("owner_guid",-1);return;}}}
     {write(stream,value.req_guid);{if(stream.error()){stream.trace_error("req_guid",-1);return;}}}
     {write(stream,value.req_type);{if(stream.error()){stream.trace_error("req_type",-1);return;}}}
     {write(stream,value.result);{if(stream.error()){stream.trace_error("result",-1);return;}}}
-    if(tag&16ULL)
+    if(tag&8ULL)
     {
       uint32_t len = (uint32_t)(value.data).size();
       write(stream,len);

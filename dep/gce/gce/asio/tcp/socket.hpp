@@ -11,6 +11,7 @@
 #define GCE_ASIO_TCP_SOCKET_HPP
 
 #include <gce/asio/config.hpp>
+#include <gce/asio/socket_fwd.hpp>
 #include <boost/optional.hpp>
 #include <boost/array.hpp>
 
@@ -20,12 +21,6 @@ namespace asio
 {
 namespace tcp
 {
-static match_t const as_conn = atom("as_conn");
-static match_t const as_recv = atom("as_recv");
-static match_t const as_recv_some = atom("as_recv_some");
-static match_t const as_send = atom("as_send");
-static match_t const as_send_some = atom("as_send_some");
-
 /// a wrapper for boost::asio::ip::tcp::socket
 class socket
   : public addon_t
@@ -51,7 +46,7 @@ public:
 
 public:
   template <typename Actor>
-  explicit socket(Actor& a)
+  explicit socket(Actor a)
     : addon_t(a)
     , snd_(base_t::get_strand())
     , skt_opt_(boost::in_place(boost::ref(snd_.get_io_service())))
@@ -64,7 +59,7 @@ public:
   }
   
   template <typename Actor>
-  explicit socket(Actor& a, boost::shared_ptr<tcp_socket_t> skt)
+  explicit socket(Actor a, boost::shared_ptr<tcp_socket_t> skt)
     : addon_t(a)
     , snd_(base_t::get_strand())
     , skt_ptr_(skt)
@@ -226,7 +221,33 @@ public:
       );
     recving_ = true;
   }
-  
+
+  template <typename Allocator, typename Expr>
+  void async_read_until(
+    boost::asio::basic_streambuf<Allocator>& b, 
+    Expr const& expr, 
+    message const& msg = message(as_recv_until)
+    )
+  {
+    GCE_ASSERT(!recving_);
+    GCE_ASSERT(!conning_);
+
+    recv_msg_ = msg;
+    boost::asio::async_read_until(
+      *impl_, b, expr,
+      snd_.wrap(
+        gce::detail::make_asio_alloc_handler(
+          scp_.get()->get_attachment()[ha_recv],
+          boost::bind(
+            &self_t::handle_recv, scp_.get(),
+            boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred
+            )
+          )
+        )
+      );
+    recving_ = true;
+  }
+
   template <typename ConstBufferSequence>
   void async_write(ConstBufferSequence const& buffers, message const& msg = message(as_send))
   {
@@ -407,7 +428,7 @@ private:
   {
     message msg(m);
     m = msg_nil_;
-    send2actor(msg);
+    base_t::send2actor(msg);
   }
 
 private:

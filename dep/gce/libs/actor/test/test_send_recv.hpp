@@ -54,12 +54,14 @@ public:
 
   static void test_base()
   {
+
+    boost::timer::auto_cpu_timer t;
     try
     {
       context ctx;
       threaded_actor base = spawn(ctx);
 
-      int const count_down = 10000;
+      int const count_down = 10000 * 100;
       aid_t ping = spawn(base, boost::bind(&send_recv_ut::ping_pong, _arg1));
       aid_t pong = spawn(base, boost::bind(&send_recv_ut::ping_pong, _arg1));
 

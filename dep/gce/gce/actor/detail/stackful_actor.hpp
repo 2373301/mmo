@@ -67,7 +67,9 @@ public:
     , tmr_sid_(0)
     , ec_(exit_normal)
     , lg_(base_t::ctx_.get_logger())
+    , guard_(base_t::ctx_.get_io_service())
   {
+    guard_.expires_from_now(to_chrono(infin));
   }
 
   ~stackful_actor()
@@ -152,7 +154,7 @@ public:
     if (!base_t::mb_.pop(rcv, msg, patt.match_list_, patt.recver_))
     {
       duration_t tmo = patt.timeout_;
-      if (tmo > zero)
+      if (tmo >= zero) /// change > to >= for yielding when timeout == 0
       {
         scoped_bool<bool> scp(recving_);
         if (tmo < infin)
@@ -205,7 +207,7 @@ public:
     recving_res_ = res;
     if (!base_t::mb_.pop(res, msg))
     {
-      if (tmo > zero)
+      if (tmo >= zero) /// change > to >= for yielding when timeout == 0
       {
         scoped_bool<bool> scp(responsing_);
         if (tmo < infin)
@@ -266,6 +268,8 @@ public:
 
   void start(size_t stack_size)
   {
+    guard_.async_wait(boost::bind(&self_t::guard));
+
     if (stack_size < minimum_stacksize())
     {
       stack_size = minimum_stacksize();
@@ -360,6 +364,8 @@ private:
 
   void free_self()
   {
+    errcode_t ignored_ec;
+    guard_.cancel(ignored_ec);
     aid_t self_aid = base_t::get_aid();
     base_t::send_exit(self_aid, ec_, exit_msg_);
     svc_.free_actor(this);
@@ -467,6 +473,8 @@ private:
     }
   }
 
+  static void guard() {}
+
 private:
   /// Ensure start from a new cache line.
   byte_t pad0_[GCE_CACHE_LINE_SIZE];
@@ -495,6 +503,8 @@ private:
   resp_t const nil_resp_;
   message const nil_msg_;
   log::logger_t& lg_;
+
+  timer_t guard_;
 };
 }
 }

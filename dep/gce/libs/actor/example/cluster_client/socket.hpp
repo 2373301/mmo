@@ -21,7 +21,6 @@ struct msg_header
   gce::match_t type_;
   boost::uint32_t tag_offset_;
 };
-GCE_PACK(msg_header, (size_&sfix)(type_&sfix)(tag_offset_&sfix));
 
 #define MSG_HEADER_SIZE sizeof(boost::uint32_t) + sizeof(gce::match_t) + sizeof(boost::uint32_t)
 
@@ -76,8 +75,9 @@ public:
     }
 
     msg_header hdr;
-    boost::amsg::zero_copy_buffer zbuf(buf, MaxMsgSize);
-    boost::amsg::read(zbuf, hdr);
+    adata::zero_copy_buffer zbuf;
+	zbuf.set_read(buf, header_size);
+    adata::read(zbuf, hdr);
     if (zbuf.bad())
     {
       throw std::runtime_error("message header parse error");

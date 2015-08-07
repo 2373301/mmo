@@ -60,8 +60,11 @@ void client::run()
     std::printf("client::run except: %s\n", ex.what());
   }
 
-  gce::send(base_, cln_aid, gce::atom("stop"));
-  gce::recv(base_);
+  //gce::send(base_, cln_aid, gce::atom("stop"));
+  base_.send(cln_aid, "stop");
+  base_->send(cln_aid, "stop");
+  //gce::recv(base_);
+  base_->recv();
 }
 ///----------------------------------------------------------------------------
 void client::command(std::string cmd, gce::aid_t cln_aid)
@@ -84,7 +87,8 @@ void client::command(std::string cmd, gce::aid_t cln_aid)
         throw std::runtime_error("not enough params; Usage: login <username> <passwd>");
       }
       username_ = tok_list[1];
-      gce::send(base_, cln_aid, gce::atom("cln_login"), tok_list[1], tok_list[2]);
+      //gce::send(base_, cln_aid, gce::atom("cln_login"), tok_list[1], tok_list[2]);
+	  base_->send(cln_aid, "cln_login", tok_list[1], tok_list[2]);
     }
     else if (tok_list[0] == "chat")
     {
@@ -92,7 +96,8 @@ void client::command(std::string cmd, gce::aid_t cln_aid)
       {
         throw std::runtime_error("not enough params; Usage: chat <content>");
       }
-      gce::send(base_, cln_aid, gce::atom("chat"), username_, tok_list[1]);
+      //gce::send(base_, cln_aid, gce::atom("chat"), username_, tok_list[1]);
+	  base_->send(cln_aid, "chat", username_, tok_list[1]);
     }
     else if (tok_list[0] == "chat_to")
     {
@@ -100,11 +105,14 @@ void client::command(std::string cmd, gce::aid_t cln_aid)
       {
         throw std::runtime_error("not enough params; Usage: chat_to <username> <content>");
       }
-      gce::send(base_, cln_aid, gce::atom("chat_to"), tok_list[1], username_, tok_list[2]);
+
+      //gce::send(base_, cln_aid, gce::atom("chat_to"), tok_list[1], username_, tok_list[2]);
+	  base_->send(cln_aid, "chat_to", tok_list[1], username_, tok_list[2]);
     }
     else if (tok_list[0] == "logout")
     {
-      gce::send(base_, cln_aid, gce::atom("cln_logout"), tok_list[1]);
+      //gce::send(base_, cln_aid, gce::atom("cln_logout"), tok_list[1]);
+		base_->send(cln_aid, "cln_logout", tok_list[1]);
     }
   }
 }
@@ -150,7 +158,7 @@ void quit_callback(tcp_socket& skt)
   skt.close();
 }
 ///----------------------------------------------------------------------------
-void client::pri_run(gce::actor<gce::stackful>& self)
+void client::pri_run(gce::stackful_actor& self)
 {
   try
   {
@@ -210,7 +218,7 @@ void client::pri_run(gce::actor<gce::stackful>& self)
   }
 }
 ///----------------------------------------------------------------------------
-void client::recv(gce::actor<gce::stackful>& self, tcp_socket& skt)
+void client::recv(gce::stackful_actor& self, tcp_socket& skt)
 {
   try
   {

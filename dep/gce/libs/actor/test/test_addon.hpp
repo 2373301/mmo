@@ -75,7 +75,9 @@ private:
         ea.echo("hello world!");
         message msg;
         self->match("echo").raw(msg).recv();
-
+		std::string str;
+		msg >> str;
+		std::cout << str << std::endl;
         self.send(sender, msg);
       }
     }
