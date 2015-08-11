@@ -83,12 +83,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="dbreader.cpp" />
+    <ClCompile Include="entityhandler.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="sqlite3.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="config.hpp" />
     <ClInclude Include="dbreader.h" />
+    <ClInclude Include="entityhandler.h" />
     <ClInclude Include="sqlite3.h" />
     <ClInclude Include="typedef.hpp" />
   </ItemGroup>
