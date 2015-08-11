@@ -4,23 +4,26 @@
 #include "stdafx.h"
 #include <boost/asio.hpp>
 #include <boost/thread.hpp>
-#define NUM_THREAD 6
+#include <Windows.h>
+#define NUM_THREAD 5
 
-void test()
+int g_sum = 0;
+void test(int i)
 {
-	printf("hello, world.\n");
-	//boost::this_thread::sleep(boost::posix_time::millisec(5000));
+  ++g_sum;
+  printf("%d\n", i);
 }
 
 class dbLoader
 {
 public:
-	bool run(boost::asio::io_service* io_srv)
+	bool run(boost::asio::io_service::strand *t)
 	{	
 		connectDB();
 		boost::system::error_code error;
-		io_srv->run_one(error);
-		io_srv->poll_one(error);
+		//io_srv->poll_one(error);
+   
+    t->get_io_service().run(error);
 		return true;
 	}
 
@@ -35,12 +38,26 @@ int _tmain(int argc, _TCHAR* argv[])
 	boost::asio::io_service io_service;
 	boost::system::error_code error;
 	boost::thread_group threads;
-	for (int i = 0; i < NUM_THREAD - 1; i++)
+  boost::asio::io_service::work wk(io_service);
+  typedef boost::asio::io_service::strand myStrand;
+  std::vector<myStrand*> vec;
+
+	for (int i = 0; i <= NUM_THREAD - 1; i++)
 	{
 		dbLoader* loader = new dbLoader;
-		threads.create_thread(boost::bind(&dbLoader::run, loader, &io_service));
+    boost::asio::io_service::strand *t = new boost::asio::io_service::strand(io_service);
+		threads.create_thread(boost::bind(&dbLoader::run, loader, t));
+    vec.push_back(t);
 	}
-
+  
+  
+  for(std::vector<myStrand*>::iterator it = vec.begin(); it != vec.end(); ++it)
+  {
+    for (int i = 0; i != 10; i++ )
+    {
+      (*it)->post(boost::bind(&test, i));
+    }  
+  }
 	threads.join_all();
 
 	return error.value();
