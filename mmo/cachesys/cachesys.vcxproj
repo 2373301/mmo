@@ -90,7 +90,7 @@
   <ItemGroup>
     <ClInclude Include="config.hpp" />
     <ClInclude Include="dbreader.h" />
-    <ClInclude Include="entityhandler.h" />
+    <ClInclude Include="entityhandler.hpp" />
     <ClInclude Include="sqlite3.h" />
     <ClInclude Include="typedef.hpp" />
   </ItemGroup>
