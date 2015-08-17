@@ -5,7 +5,5 @@ public:
     dbreader();
     ~dbreader();
 
-    
-
 };
 
