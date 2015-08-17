@@ -13,6 +13,7 @@ cache_req_type
 	uint8 unload	= 8;		// 仅仅删除 cache中的entity, 下次从db中加载
 }
 
+
 // 向 data server 请求数据
 xs2ds_entity_req
 {
