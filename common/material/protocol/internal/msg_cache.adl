@@ -1,24 +1,9 @@
 namespace = p;
 
-cache_req_type
-{
-	uint8 create	= 0;		// 请求创建entity
-	uint8 load		= 1;		// 获取entity, cache中如果不存在此entity, 则从db加载
-	uint8 flush		= 2;		// 通知cache此entity已经不需要了,保存进db
-	uint8 query		= 3;		// 查询entity, 如果cache不存在此entity, 则返回null
-	uint8 update	= 4;		// 更新entity
-	uint8 remove	= 5;		// 销毁entity, 如果实体在db中则从db中删除
-	uint8 one_off	= 6;		// 只从db加载entity , 不进入cache
-	uint8 create_flush = 7;		// 创建entity并保存进db,不进入cache
-	uint8 unload	= 8;		// 仅仅删除 cache中的entity, 下次从db中加载
-}
-
-
 // 向 data server 请求数据
 xs2ds_entity_req
 {
 	uint64		req_guid;		// 请求的guid
-	uint8		req_type;		// 请求类型, cache_req_type
 	list<uint8>	data;			// 待存储的data
 }
 
@@ -26,7 +11,6 @@ xs2ds_entity_req
 ds2xs_entity_ack
 {
 	uint64		req_guid;		// 请求的guid
-	uint8		req_type;		// 请求类型, cache_req_type
-	uint8		result;			// 结果 0: 正常, 1:实体没有找到, 2:实体已存在, 3:实体被锁定,104:协议不正确, 105: data 内部错误
+	uint8		result;			// 结果
 	list<uint8>	data;			// 返回的data
 }

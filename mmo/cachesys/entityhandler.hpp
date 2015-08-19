@@ -1,16 +1,16 @@
 #pragma once
 #include "typedef.hpp"
-#include <boost/unordered_map.hpp>
-#include <boost/noncopyable.hpp>
+#include "lru.hpp"
 
 class entityhandler 
     : boost::noncopyable
 {
 public:
-    void run(gce::stackful_actor self, std::string& service_name, gce::aid_t& saver)
+    void run(gce::stackful_actor self, std::string& service_name, gce::aid_t& saver, uint64_t cache_size)
     {   
         stopped_ = false;
         saver_ = saver;
+        lru_.set_size(cache_size);
 
         try
         {
@@ -21,36 +21,18 @@ public:
             while (!stopped_)
             {
                 p::xs2ds_entity_req *req = new p::xs2ds_entity_req;
-                gce::aid_t sender = self->match(XS2DS_ENTITY_REQ).recv(req);
+                gce::aid_t sender = self->match(XS2DS_ENTITY_REQ).recv(*req);
 
-                p::cache_req_type type;
-                if (type.create == req->req_type)
+                
+                if(req->data.empty())
                 {
-                    on_create(self, req, sender);
+                    // get
+
                 }
-                else if (type.load == req->req_type)
+                else
                 {
-                }
-                else if (type.flush == req->req_type)
-                {
-                }
-                else if (type.query == req->req_type)
-                {
-                }
-                else if (type.update == req->req_type)
-                {
-                }
-                else if (type.remove == req->req_type)
-                {
-                }
-                else if (type.one_off == req->req_type)
-                {
-                }
-                else if (type.create_flush == req->req_type)
-                {
-                }
-                else if (type.unload == req->req_type)
-                {
+                    // set
+
                 }
             }
 
@@ -64,15 +46,21 @@ public:
     }
  
 private:
-    void on_create(gce::stackful_actor self, p::xs2ds_entity_req* req, gce::aid_t sender)
+    void on_get(gce::stackful_actor& self, p::xs2ds_entity_req* req, gce::aid_t sender)
     {
-        if(add_entity(req))
+        uint64_t removed_guid = 0;
+        if (lru_.update(req->req_guid, removed_guid))
         {
-            self->send(saver_)
+
         }
     }
 
-    bool add_entity(p::xs2ds_entity_req* req)
+    void on_set(gce::stackful_actor& self, p::xs2ds_entity_req* req, gce::aid_t sender)
+    {
+        
+    }
+
+    bool set(p::xs2ds_entity_req* req)
     {
         if(req->data.empty())
         {
@@ -91,11 +79,22 @@ private:
        return true;
     }
 
+    p::xs2ds_entity_req* get(uint64_t guid)
+    {
+
+    }
+
+    void flush(uint64_t guid)
+    {
+
+    }
+
 private:
     typedef boost::unordered_map<uint64_t, p::xs2ds_entity_req* > cache_map_t;
     cache_map_t entity_map_;
     bool stopped_;
     gce::log::logger_t* log_;
     gce::aid_t saver_;
+    lru lru_;
 };
 
