@@ -23,13 +23,13 @@ public:
                 p::xs2ds_entity_req *req = new p::xs2ds_entity_req;
                 gce::aid_t sender = self->match(XS2DS_ENTITY_REQ).recv(*req);
 
-                
-                if(req->data.empty())
+                p::entity_req_type type;
+                if(type.get == req->req_type)
                 {
                     // get
 
                 }
-                else
+                else if(type.set == req->req_type)
                 {
                     // set
 

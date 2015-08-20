@@ -1,9 +1,17 @@
 namespace = p;
 
+entity_req_type
+{
+	uint8 get	= 0;		// 请求 entity, 没有则从db 加载
+	uint8 set	= 1;		// 设置  entity, create or update
+}
+
+
 // 向 data server 请求数据
 xs2ds_entity_req
 {
 	uint64		req_guid;		// 请求的guid
+	uint8		req_type;		// 请求类型, entity_req_type
 	list<uint8>	data;			// 待存储的data
 }
 
@@ -11,6 +19,7 @@ xs2ds_entity_req
 ds2xs_entity_ack
 {
 	uint64		req_guid;		// 请求的guid
-	uint8		result;			// 结果
+	uint8		req_type;		// 请求类型, entity_req_type
+	uint8		result;			// 结果 0: 正常, 1:协议不正确, 2:内部错误
 	list<uint8>	data;			// 返回的data
 }
