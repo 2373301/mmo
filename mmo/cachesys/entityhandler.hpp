@@ -6,10 +6,11 @@ class entityhandler
     : boost::noncopyable
 {
 public:
-    void run(gce::stackful_actor self, std::string& service_name, gce::aid_t& saver, uint64_t cache_size)
+    void run(gce::stackful_actor self, std::string& service_name, gce::aid_t& saver, uint64_t cache_size, gce::aid_t& dbloader)
     {   
         stopped_ = false;
         saver_ = saver;
+        dbloader_ = dbloader;
         lru_.set_size(cache_size);
 
         try
@@ -27,12 +28,13 @@ public:
                 if(type.get == req->req_type)
                 {
                     // get
+                    on_get(self, req, sender);
 
                 }
                 else if(type.set == req->req_type)
                 {
                     // set
-
+                    on_set(self, req, sender);
                 }
             }
 
@@ -46,16 +48,35 @@ public:
     }
  
 private:
-    void on_get(gce::stackful_actor& self, p::xs2ds_entity_req* req, gce::aid_t sender)
+    void on_get(gce::stackful_actor self, p::xs2ds_entity_req* req, gce::aid_t sender)
     {
         uint64_t removed_guid = 0;
-        if (lru_.update(req->req_guid, removed_guid))
+        uint64_t req_guid = req->req_guid;
+        if (lru_.update(req_guid, removed_guid))
         {
 
         }
+
+        // 1. check if exists  yes, return ,  expired  get back , return, 
+        // 2. not exitsted,  loader
+        // 3. loaded,  join ,return ,  failed load, return
+        // success,  update lru, 
+        p::xs2ds_entity_req* existed = NULL;
+        do 
+        {
+            auto it = entity_map_.find(req_guid);
+            if( it != entity_map_.end())
+            {
+                existed = it->second;
+                break;
+            }
+
+
+
+        } while (false);
     }
 
-    void on_set(gce::stackful_actor& self, p::xs2ds_entity_req* req, gce::aid_t sender)
+    void on_set(gce::stackful_actor self, p::xs2ds_entity_req* req, gce::aid_t sender)
     {
         
     }
@@ -95,6 +116,7 @@ private:
     bool stopped_;
     gce::log::logger_t* log_;
     gce::aid_t saver_;
+    gce::aid_t dbloader_;
     lru lru_;
 };
 
