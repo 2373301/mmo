@@ -103,16 +103,30 @@ private:
 
         } while (false);
 
-        ack.data.swap(req->data);
+        ack.data = req->data; // ¸´ÖÆ
         self->send(sender, DS2XS_ENTITY_ACK, ack);
         if( !need_reg)
             return;
 
         uint64_t removed_guid = 0;
-        if (lru_.update(req_guid, removed_guid))
-        {
+        if (!lru_.update(req_guid, removed_guid))
+            return;
 
+        auto it = entity_map_.find(removed_guid);
+        if (it == entity_map_.end())
+            return;
+        
+        expired_item item;
+        item.transcation_id = counter_.now();
+        item.data->data.swap(it->second->data);
+        entity_map_.erase(it);
+        auto expired_it = expired_map_.find(removed_guid);
+        if (expired_it != expired_map_.end())
+        {
+            expired_map_.erase(expired_it);
         }
+        auto inserted = expired_map_.insert(std::make_pair(removed_guid, item));
+        inserted->first->second = it->second->data;
     }
 
     void on_set(gce::stackful_actor self, std::shared_ptr<p::xs2ds_entity_req> req, gce::aid_t sender)
