@@ -88,6 +88,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="config.hpp" />
+    <ClInclude Include="counter.hpp" />
     <ClInclude Include="dbreader.h" />
     <ClInclude Include="entityhandler.hpp" />
     <ClInclude Include="list.hpp" />
