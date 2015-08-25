@@ -82,18 +82,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="dbreader.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="sqlite3.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="config.hpp" />
     <ClInclude Include="counter.hpp" />
-    <ClInclude Include="dbreader.h" />
+    <ClInclude Include="csqlite.hpp" />
+    <ClInclude Include="dbreader.hpp" />
     <ClInclude Include="entityhandler.hpp" />
     <ClInclude Include="list.hpp" />
     <ClInclude Include="lru.hpp" />
     <ClInclude Include="sqlite3.h" />
+    <ClInclude Include="sqlite_serializer.hpp" />
     <ClInclude Include="typedef.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

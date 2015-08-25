@@ -35,13 +35,13 @@ public:
                 if(type.get == req->req_type)
                 {
                     // get
-                    on_get(self, req, sender);
+                    spawn(self, boost::bind(&on_get, this, _arg1, req, sender), gce::linked);
 
                 }
                 else if(type.set == req->req_type)
                 {
                     // set
-                    on_set(self, req, sender);
+                    spawn(self, boost::bind(&on_set, this, _arg1, req, sender), gce::linked);
                 }
             }
 
@@ -86,8 +86,8 @@ private:
             }
 
             // 需要 db 加载
-            gce::resp_t res = self->request(dbloader_, XS2DS_ENTITY_REQ, *req);
-            self->respond(res, *req);
+            gce::resp_t res = self->request(dbloader_, XS2DS_ENTITY_REQ, req);
+            self->respond(res, req);
             if(!req->data.empty())
             {
                 existed = req;
@@ -103,7 +103,7 @@ private:
 
         } while (false);
 
-        ack.data = req->data; // 复制
+        ack.data = existed->data; // 复制
         self->send(sender, DS2XS_ENTITY_ACK, ack);
         if( !need_reg)
             return;
@@ -116,8 +116,8 @@ private:
         if (it == entity_map_.end())
             return;
         
-        expired_item item;
-        item.transcation_id = counter_.now();
+        expired_item item; 
+        item.transcation_id = counter_.now();  // id 用于比较, 方式误删
         item.data->data.swap(it->second->data);
         entity_map_.erase(it);
         auto expired_it = expired_map_.find(removed_guid);
@@ -125,42 +125,15 @@ private:
         {
             expired_map_.erase(expired_it);
         }
-        auto inserted = expired_map_.insert(std::make_pair(removed_guid, item));
-        inserted->first->second = it->second->data;
+        expired_map_.insert(std::make_pair(removed_guid, item));
+
+        // 发送给保存actor
+        self->send(saver_, "save", item);
     }
 
     void on_set(gce::stackful_actor self, std::shared_ptr<p::xs2ds_entity_req> req, gce::aid_t sender)
     {
         
-    }
-
-    bool set(p::xs2ds_entity_req* req)
-    {
-        if(req->data.empty())
-        {
-            GCE_INFO(*log_) << "entity size is zero: " << req->req_guid  << "\n";
-            return false;
-        }
-
-        auto it = entity_map_.find(req->req_guid);
-        if( it != entity_map_.end())
-        {
-            GCE_INFO(*log_) << "failed to add entity with reduplicate guid: " << req->req_guid << "\n";
-            return false;
-        }
-
-       entity_map_.insert(std::make_pair(req->req_guid, req));
-       return true;
-    }
-
-    p::xs2ds_entity_req* get(uint64_t guid)
-    {
-
-    }
-
-    void flush(uint64_t guid)
-    {
-
     }
 
 private:
