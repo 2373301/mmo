@@ -19,11 +19,13 @@ struct record
 
     uint64_t	            guid;
     uint32_t	            stream_size;
-    std::vector<uint8_t>    stream;
+    std::string             stream;
     uint32_t	            optype;
     uint64_t                transaction_id;
     std::string             cache_addr;
 };
+
+#define  INSERT_RECORD_SQL "insert into record(guid, stream_size, stream, optype, transaction_id) values(?, ?, ?, ?, ?)"
 
 typedef std::vector<record *> record_set_t;
 
@@ -72,24 +74,65 @@ public:
         return false;
     }
 
+    // 有结果才true, 失败或空则为false
     bool read(uint32_t read_number, const std::string& condition, record_set_t& records)
-    {
-        return false;
+    {   
+        if( NULL == db_)
+            return false;
+
+        sqlite3_stmt *stmt = NULL;
+        std::stringstream oss;
+        oss << "select guid, stream_size, stream, optype, transaction_id from record ";
+        if(condition.length())
+            oss << condition;
+
+        int res = sqlite3_prepare(db_, oss.str().c_str(), -1, &stmt, NULL);
+        if(SQLITE_OK != res)
+            return false;
+
+        int cur_read = 0;
+        for (int s = sqlite3_step(stmt); 
+            cur_read < read_number && SQLITE_ROW == s;
+            ++cur_read, s = sqlite3_step(stmt)
+            )
+        {
+            record * one = new record;
+            one->guid = sqlite3_column_int64(stmt, 0);
+            one->stream_size = sqlite3_column_int(stmt, 1);
+            one->stream = std::string((char*)sqlite3_column_blob(stmt, 2), one->stream_size);
+            one->optype = sqlite3_column_int(stmt, 3);
+            one->transaction_id = sqlite3_column_int64(stmt, 4);
+            records.push_back(one);
+        }
+
+        sqlite3_finalize(stmt);
+        return 0 != records.size();
     }
 
-    bool begin_transaction()
-    {
-        return false;
+    void begin_transaction()
+    {   
+        sqlite3_exec(db_, "begin transaction;", NULL, NULL, NULL);
     }
 
-    bool end_transaction()
+    void end_transaction()
     {
-        return false;
+       sqlite3_exec(db_, "commit transaction;", NULL, NULL, NULL);
     }
 
     bool write(const record& rec)
-    {
-        return false;
+    {   
+        if(NULL == db_)
+            return false;
+
+        sqlite3_stmt* stmt = NULL;
+        sqlite3_prepare(db_, INSERT_RECORD_SQL, -1, &stmt, 0);
+        sqlite3_bind_int64(stmt, 1, rec.guid);
+        sqlite3_bind_int(stmt, 2, rec.stream_size);
+        sqlite3_bind_blob(stmt, 3, rec.stream.data(), rec.stream_size, 0);
+        sqlite3_bind_int(stmt, 4, rec.optype);
+        sqlite3_bind_int64(stmt, 5, rec.transaction_id);
+        int res = sqlite3_finalize(stmt);
+        return SQLITE_DONE == res;
     }
     
     void close()
@@ -102,7 +145,7 @@ public:
 
     const std::string& file_name()
     {
-
+        return file_name_;
     }
 
 private:

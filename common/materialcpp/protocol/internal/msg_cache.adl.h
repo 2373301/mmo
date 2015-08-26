@@ -18,7 +18,7 @@ namespace p {
   {
     uint8_t req_type;
     uint64_t req_guid;
-    ::std::vector< uint8_t > data;
+    ::std::string data;
     xs2ds_entity_req()
     :    req_type(0),
     req_guid(0ULL)
@@ -30,7 +30,7 @@ namespace p {
     uint8_t req_type;
     uint8_t result;
     uint64_t req_guid;
-    ::std::vector< uint8_t > data;
+    ::std::string data;
     ds2xs_entity_ack()
     :    req_type(0),
     result(0),
@@ -116,11 +116,8 @@ namespace adata
       uint32_t len = check_read_size(stream);
       {if(stream.error()){stream.trace_error("data",-1);return;}}
       value.data.resize(len);
-      for (std::size_t i = 0 ; i < len ; ++i)
-      {
-        {read(stream,value.data[i]);}
-        {if(stream.error()){stream.trace_error("data",(int32_t)i);return;}}
-      }
+      stream.read((char *)value.data.data(),len);
+      {if(stream.error()){stream.trace_error("data",-1);return;}}
     }
     if(len_tag >= 0)
     {
@@ -152,10 +149,7 @@ namespace adata
     {
       int32_t len = (int32_t)(value.data).size();
       size += size_of(len);
-      for (::std::vector< uint8_t >::const_iterator i = value.data.begin() ; i != value.data.end() ; ++i)
-      {
-        size += size_of(*i);
-      }
+      size += len;
     }
     size += size_of(tag);
     size += size_of(size + size_of(size));
@@ -177,12 +171,8 @@ namespace adata
     {
       uint32_t len = (uint32_t)(value.data).size();
       write(stream,len);
-      int32_t count = 0;
-      for (::std::vector< uint8_t >::const_iterator i = value.data.begin() ; i != value.data.end() ; ++i, ++count)
-      {
-        {write(stream,*i);}
-        {if(stream.error()){stream.trace_error("data",count);return;}}
-      }
+      stream.write((value.data).data(),len);
+      {if(stream.error()){stream.trace_error("data",-1);return;}}
     }
     return;
   }
@@ -206,11 +196,8 @@ namespace adata
       uint32_t len = check_read_size(stream);
       {if(stream.error()){stream.trace_error("data",-1);return;}}
       value.data.resize(len);
-      for (std::size_t i = 0 ; i < len ; ++i)
-      {
-        {read(stream,value.data[i]);}
-        {if(stream.error()){stream.trace_error("data",(int32_t)i);return;}}
-      }
+      stream.read((char *)value.data.data(),len);
+      {if(stream.error()){stream.trace_error("data",-1);return;}}
     }
     if(len_tag >= 0)
     {
@@ -245,10 +232,7 @@ namespace adata
     {
       int32_t len = (int32_t)(value.data).size();
       size += size_of(len);
-      for (::std::vector< uint8_t >::const_iterator i = value.data.begin() ; i != value.data.end() ; ++i)
-      {
-        size += size_of(*i);
-      }
+      size += len;
     }
     size += size_of(tag);
     size += size_of(size + size_of(size));
@@ -271,12 +255,8 @@ namespace adata
     {
       uint32_t len = (uint32_t)(value.data).size();
       write(stream,len);
-      int32_t count = 0;
-      for (::std::vector< uint8_t >::const_iterator i = value.data.begin() ; i != value.data.end() ; ++i, ++count)
-      {
-        {write(stream,*i);}
-        {if(stream.error()){stream.trace_error("data",count);return;}}
-      }
+      stream.write((value.data).data(),len);
+      {if(stream.error()){stream.trace_error("data",-1);return;}}
     }
     return;
   }
