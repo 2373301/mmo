@@ -91,6 +91,7 @@
     <ClInclude Include="csqlite.hpp" />
     <ClInclude Include="dbreader.hpp" />
     <ClInclude Include="entityhandler.hpp" />
+    <ClInclude Include="file_name_generator.hpp" />
     <ClInclude Include="list.hpp" />
     <ClInclude Include="lru.hpp" />
     <ClInclude Include="sqlite3.h" />
