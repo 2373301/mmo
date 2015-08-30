@@ -24,7 +24,7 @@ public:
         return diff >= last_gen_time_ ? true : false;
     }
 
-    std::string get_file_name()
+    std::string gen()
     {
         time_t now;
         time(&now);

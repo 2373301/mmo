@@ -3,12 +3,6 @@
 #include "lru.hpp"
 #include "counter.hpp"
 
-struct expired_item 
-{   
-    uint64_t transcation_id;
-    std::shared_ptr<p::xs2ds_entity_req> data;
-};
-
 class entityhandler 
     : boost::noncopyable
 {
