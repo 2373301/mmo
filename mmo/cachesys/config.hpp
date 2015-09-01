@@ -10,6 +10,12 @@ struct config
     std::string addr;
     std::string context_name;
     std::string service_name;
+
+    std::string db_name;
+    std::string db_user;
+    std::string db_pwd;
+    std::string db_ip;
+    uint32_t    db_port;
 };
 
 
