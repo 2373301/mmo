@@ -55,13 +55,13 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;ZEN_WIN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\dep\gce\;..\..\dep\gce\build\;..\..\dep\zenXml\;C:\local\boost_1_57_0;C:\Program Files (x86)\Lua\5.1\include;..\..\common\materialcpp\protocol;..\..\dep\gce\gce\adata\cpp</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\dep\gce\;..\..\dep\gce\build\;..\..\dep\zenXml\;C:\local\boost_1_57_0;C:\Program Files (x86)\Lua\5.1\include;..\..\common\materialcpp\protocol;..\..\dep\gce\gce\adata\cpp;..\..\dep\mysql++-3.2.1\lib</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\local\boost_1_57_0\lib32-msvc-12.0;C:\Program Files (x86)\Lua\5.1\lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>lua5.1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\local\boost_1_57_0\lib32-msvc-12.0;C:\Program Files (x86)\Lua\5.1\lib;..\..\dep\lib\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>lua5.1.lib;mysqlpp.lib;libmysql.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
