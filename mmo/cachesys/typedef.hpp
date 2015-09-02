@@ -10,7 +10,7 @@
 struct expired_item
 {
     uint64_t transcation_id;
-    std::shared_ptr<p::xs2ds_entity_req> data;
+    boost::shared_ptr<p::xs2ds_entity_req> data;
 };
 
 #endif // typedef_h__

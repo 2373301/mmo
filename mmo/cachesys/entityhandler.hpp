@@ -22,7 +22,7 @@ public:
 
             while (!stopped_)
             {
-                std::shared_ptr<p::xs2ds_entity_req> req(new p::xs2ds_entity_req);
+                boost::shared_ptr<p::xs2ds_entity_req> req(new p::xs2ds_entity_req);
                 gce::aid_t sender = self->match(XS2DS_ENTITY_REQ).recv(*req);
 
                 p::entity_req_type type;
@@ -49,14 +49,14 @@ public:
     }
  
 private:
-    void on_get(gce::stackful_actor self, std::shared_ptr<p::xs2ds_entity_req> req, gce::aid_t sender)
+    void on_get(gce::stackful_actor self, boost::shared_ptr<p::xs2ds_entity_req> req, gce::aid_t sender)
     {   
         p::ds2xs_entity_ack ack;
         ack.req_guid = req->req_guid;
         ack.req_type = req->req_type;
 
         uint64_t req_guid = req->req_guid;
-        std::shared_ptr<p::xs2ds_entity_req> existed;
+        boost::shared_ptr<p::xs2ds_entity_req> existed;
         bool need_reg = false;
         do 
         {   
@@ -125,13 +125,13 @@ private:
         self->send(saver_, "save", item);
     }
 
-    void on_set(gce::stackful_actor self, std::shared_ptr<p::xs2ds_entity_req> req, gce::aid_t sender)
+    void on_set(gce::stackful_actor self, boost::shared_ptr<p::xs2ds_entity_req> req, gce::aid_t sender)
     {
         
     }
 
 private:
-    typedef boost::unordered_map<uint64_t, std::shared_ptr<p::xs2ds_entity_req> > cache_map_t;
+    typedef boost::unordered_map<uint64_t, boost::shared_ptr<p::xs2ds_entity_req> > cache_map_t;
     typedef boost::unordered_map<uint64_t, expired_item> expired_map_t;
     cache_map_t entity_map_;    // cache
     bool stopped_;

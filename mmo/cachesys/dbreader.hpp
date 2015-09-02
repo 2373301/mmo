@@ -6,14 +6,14 @@
 #include <boost/thread/tss.hpp>
 
 class dbreader
-    :boost::noncopyable
-    ,public gce::addon_t
+    :public gce::addon_t
+    ,public boost::noncopyable
 {
     typedef gce::addon_t base_t;
 public:
     template <typename Actor>
     dbreader(Actor& a)
-        : addon_t(a)
+        :gce::addon_t(a)
     {
     }
 
@@ -27,31 +27,51 @@ public:
         {
             threads.create_thread(boost::bind(&dbreader::db_load_thread, this, &io_service, self.get_aid()));
         }
-            
-        std::shared_ptr<p::xs2ds_entity_req> req;
+           
+        boost::shared_ptr<p::xs2ds_entity_req> req;
         while (true)
-        {
+        {   
+            
             gce::aid_t sender = self->match(XS2DS_ENTITY_REQ).recv(req);
-            // ∑¢ÀÕº”‘ÿdb post
+            io_service.post(boost::bind(&dbreader::load, this, req));
         }
 
     }
 
-private:
-    void send_back(std::string const& str)
-    {
-        gce::io_service_t& ios = base_t::get_strand().get_io_service();
-        ios.post(boost::bind(&dbreader::pri_send_back, this, str));
+    void load(boost::shared_ptr<p::xs2ds_entity_req> req)
+    {      
+           std::string table_name;
+           get_table_name(req->req_guid, table_name);
+           mysqlpp::Query q = conn_->query();
+           q << "select guid, body from " << table_name << " where guid = " << req->req_guid;
+           const mysqlpp::StoreQueryResult& res = q.store();
+           if(0 == res.size())
+            return;
+
+           req->data.insert(0, res.at(0).at(0).data(), res.at(0).at(0).length());
+           send_back(req);
     }
 
-    void pri_send_back(std::string const& str)
+    bool get_table_name(uint64_t guid, std::string& name)
+    {
+        return false;
+    }
+
+private:
+    void send_back(boost::shared_ptr<p::xs2ds_entity_req>& req)
+    {
+        gce::io_service_t& ios = base_t::get_strand().get_io_service();
+        ios.post(boost::bind(&dbreader::pri_send_back, this, req));
+    }
+
+    void pri_send_back(boost::shared_ptr<p::xs2ds_entity_req>& req)
     {
         gce::message m("echo");
-        m << str;
+        //m << req;
         base_t::send2actor(m);
     }
 
-    void db_load_thread(boost::asio::io_service& srv, gce::aid_t)
+    void db_load_thread(boost::asio::io_service* srv, gce::aid_t)
     {
         conn_.reset(new mysqlpp::Connection);
         conn_->set_option(new mysqlpp::SetCharsetNameOption("utf8"));
@@ -66,7 +86,7 @@ private:
         boost::system::error_code error;
         while (true)
         {
-            srv.run_one(error);
+            srv->run_one(error);
         }
     }
 

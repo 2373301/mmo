@@ -1,6 +1,7 @@
 #include "typedef.hpp"
 #include "config.hpp"
 #include <boost/bind.hpp>
+#include "dbreader.hpp"
 
 void guid_server(gce::stackful_actor self, std::string& service_name, config& cfg, gce::aid_t saver)
 {
@@ -92,7 +93,9 @@ int main(int argc, char * argv[])
         gce::threaded_actor base = gce::spawn(ctx);
         gce::bind(base, cfg.addr);
         gce::aid_t saver = spawn(base, boost::bind(&config_saver, _arg1, cfg), gce::monitored);
+        dbreader db_reader(base);
         gce::aid_t guid = spawn(base, boost::bind(&guid_server, _arg1, cfg.service_name, cfg, saver), gce::monitored); 
+        gce::aid_t db_reader_guid = spawn(base, boost::bind(&dbreader::run, &db_reader, _arg1, cfg), gce::monitored); 
         spawn(base, boost::bind(&timeout_actor, _arg1, guid), gce::monitored);
         base->recv(gce::exit);
     }
