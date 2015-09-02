@@ -81,7 +81,7 @@ private:
 
             // ÐèÒª db ¼ÓÔØ
             gce::resp_t res = self->request(dbloader_, XS2DS_ENTITY_REQ, req);
-            self->respond(res, req);
+            self->respond(res, req->data);
             if(!req->data.empty())
             {
                 existed = req;

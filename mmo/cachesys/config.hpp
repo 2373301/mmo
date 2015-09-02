@@ -16,6 +16,7 @@ struct config
     std::string db_pwd;
     std::string db_ip;
     uint32_t    db_port;
+    uint32_t    db_thread_num;
 };
 
 

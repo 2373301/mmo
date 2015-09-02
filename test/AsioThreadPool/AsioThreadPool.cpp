@@ -11,7 +11,7 @@ int g_sum = 0;
 void test(int i)
 {
   ++g_sum;
-  printf("%d\n", i);
+  printf("%d\n", GetCurrentThreadId());
 }
 
 class dbLoader
@@ -65,4 +65,6 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	return error.value();
 }
+
+
 
