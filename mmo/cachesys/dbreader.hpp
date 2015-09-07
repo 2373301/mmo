@@ -23,7 +23,7 @@ public:
         boost::asio::io_service io_service;
         boost::thread_group threads;
         boost::asio::io_service::work wk(io_service);
-        for (int i = 0; i < cfg_.db_thread_num; i++)
+        for (uint32_t i = 0; i < cfg_.db_thread_num; i++)
         {
             threads.create_thread(boost::bind(&dbreader::db_load_thread, this, &io_service, self.get_aid()));
         }
@@ -31,7 +31,6 @@ public:
         boost::shared_ptr<p::xs2ds_entity_req> req;
         while (true)
         {   
-            
             gce::aid_t sender = self->match(XS2DS_ENTITY_REQ).recv(req);
             io_service.post(boost::bind(&dbreader::load, this, req));
         }
