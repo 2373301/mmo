@@ -1,10 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Root>
     <config>
-        <seed>1714</seed>
-        <index>1714</index>
+        <seed>174</seed>
+        <index>174</index>
         <addr>tcp://127.0.0.1:20000</addr>
         <context_name>guidsys</context_name>
         <service_name>guidsys</service_name>
+        <db_name>test</db_name>
+        <db_user>root</db_user>
+        <db_pwd>root</db_pwd>
+        <db_ip>127.0.0.1</db_ip>
+        <db_port>3306</db_port>
+        <db_thread_num>2</db_thread_num>
     </config>
 </Root>
