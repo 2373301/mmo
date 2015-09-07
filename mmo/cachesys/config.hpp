@@ -31,6 +31,13 @@ namespace zen
         out["addr"](value.addr);
         out["context_name"](value.context_name);
         out["service_name"](value.service_name);
+
+        out["db_name"](value.db_name);
+        out["db_user"](value.db_user);
+        out["db_pwd"](value.db_pwd);
+        out["db_ip"](value.db_ip);
+        out["db_port"](value.db_port);
+        out["db_thread_num"](value.db_thread_num);
     }
     template <> inline
         bool readStruc(const XmlElement& input, config& value)
@@ -41,6 +48,13 @@ namespace zen
         rv = in["addr"](value.addr) && rv;
         rv = in["context_name"](value.context_name)  && rv;
         rv = in["service_name"](value.service_name)  && rv;
+
+        rv = in["db_name"](value.db_name) && rv;
+        rv = in["db_user"](value.db_user) && rv;
+        rv = in["db_pwd"](value.db_pwd) && rv;
+        rv = in["db_ip"](value.db_ip) && rv;
+        rv = in["db_port"](value.db_port) && rv;
+        rv = in["db_thread_num"](value.db_thread_num) && rv;
         return rv;
     }
 }
