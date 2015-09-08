@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Root>
     <config>
-        <seed>174</seed>
-        <index>174</index>
+        <seed>7384</seed>
+        <index>7384</index>
         <addr>tcp://127.0.0.1:20000</addr>
         <context_name>guidsys</context_name>
         <service_name>guidsys</service_name>
