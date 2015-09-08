@@ -31,8 +31,23 @@ public:
         boost::shared_ptr<p::xs2ds_entity_req> req;
         while (true)
         {   
-            gce::aid_t sender = self->match(XS2DS_ENTITY_REQ).recv(req);
-            io_service.post(boost::bind(&dbreader::load, this, req));
+            //gce::aid_t sender = self->match(XS2DS_ENTITY_REQ).recv(req);
+            gce::message msg;
+            gce::aid_t sender = self.recv(msg);
+            if( gce::aid_nil == sender)
+                continue;
+            
+            gce::match_t type = msg.get_type();
+            if(XS2DS_ENTITY_REQ == type.val_)
+            {   
+                msg >> req;
+                io_service.post(boost::bind(&dbreader::load, this, req));
+            }
+            else if(DS2XS_ENTITY_ACK == type.val_)
+            {
+                msg >> req;
+            }
+
         }
 
     }
@@ -47,13 +62,14 @@ public:
            if(0 == res.size())
             return;
 
-           req->data.insert(0, res.at(0).at(0).data(), res.at(0).at(0).length());
+           req->data.insert(0, res.at(0).at(1).data(), res.at(0).at(1).length());
            send_back(req);
     }
 
     bool get_table_name(uint64_t guid, std::string& name)
-    {
-        return false;
+    {   // todo ¡Ÿ ±≤‚ ‘÷ª”√
+        name = "temp";
+        return true;
     }
 
 private:
@@ -65,8 +81,9 @@ private:
 
     void pri_send_back(boost::shared_ptr<p::xs2ds_entity_req>& req)
     {
-        gce::message m("echo");
-        //m << req;
+        gce::message m;
+        m.set_type(DS2XS_ENTITY_ACK);
+        m << req;
         base_t::send2actor(m);
     }
 

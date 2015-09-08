@@ -3,32 +3,18 @@
 #include <boost/bind.hpp>
 #include "dbreader.hpp"
 
-void guid_server(gce::stackful_actor self, std::string& service_name, config& cfg, gce::aid_t saver)
+void main_actor(gce::stackful_actor self, config& cfg)
 {
     try
     {
-        gce::register_service(self, service_name.c_str());
+        dbreader reader(self);
+        gce::aid_t db_reader_actor = spawn(self, boost::bind(&dbreader::run, &reader, _arg1, cfg), gce::monitored);
 
-        for(uint64_t i = 0;; i++)
-        {   
-            gce::pattern patt(gce::zero);
-            gce::message msg;
-            gce::aid_t sender = self.recv(msg, patt);
-            if (sender == gce::aid_nil)
-                continue;
-
-//             gce::errcode_t ec;
-//             self->match("timeout").timeout(gce::zero, ec).recv();
-//             if(ec)
-//                 continue;
-
-            self->send(saver, "update", i, i);  
-            gce::log::logger_t& log = self.get_context().get_logger();
-            GCE_INFO(log) << "hello"  << i << "\n";
-            
-        }
-
-        gce::deregister_service(self, service_name.c_str());
+        boost::shared_ptr<p::xs2ds_entity_req> req(new p::xs2ds_entity_req);
+        req->req_guid = 1;
+        self->send(db_reader_actor, XS2DS_ENTITY_REQ, req);
+        gce::message msg;
+        self.recv(msg);
     }
     catch (std::exception& ex)
     {
@@ -93,10 +79,10 @@ int main(int argc, char * argv[])
         gce::threaded_actor base = gce::spawn(ctx);
         gce::bind(base, cfg.addr);
         gce::aid_t saver = spawn(base, boost::bind(&config_saver, _arg1, cfg), gce::monitored);
-        dbreader db_reader(base);
-        //gce::aid_t guid = spawn(base, boost::bind(&guid_server, _arg1, cfg.service_name, cfg, saver), gce::monitored); 
-        gce::aid_t db_reader_guid = spawn(base, boost::bind(&dbreader::run, &db_reader, _arg1, cfg), gce::monitored); 
+        
+        gce::aid_t guid = spawn(base, boost::bind(&main_actor, _arg1, cfg), gce::monitored); 
        // spawn(base, boost::bind(&timeout_actor, _arg1, guid), gce::monitored);
+        
         base->recv(gce::exit);
     }
     catch (std::exception& ex)
