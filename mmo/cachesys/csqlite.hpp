@@ -47,7 +47,7 @@ public:
     {   
         boost::filesystem::path p = boost::filesystem::path(file_name);
         boost::filesystem::path cp = boost::filesystem::system_complete(p);
-        int res = sqlite3_open_v2(cp.c_str(), &db_, SQLITE_OPEN_NOMUTEX | SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
+        int res = sqlite3_open_v2(cp.string().c_str(), &db_, SQLITE_OPEN_NOMUTEX | SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
         if(SQLITE_OK != res)
             return false;
 
@@ -90,8 +90,8 @@ public:
         if(SQLITE_OK != res)
             return false;
 
-        int cur_read = 0;
-        for (int s = sqlite3_step(stmt); 
+        uint32_t cur_read = 0;
+        for (uint32_t s = sqlite3_step(stmt); 
             cur_read < read_number && SQLITE_ROW == s;
             ++cur_read, s = sqlite3_step(stmt)
             )

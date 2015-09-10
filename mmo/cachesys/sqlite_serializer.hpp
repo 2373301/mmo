@@ -9,9 +9,13 @@
 #define CREATE_RECORD_INDEX "create index index_guid on record(guid)"
 
 class sqlite_serializer
-    :boost::noncopyable
+    :public boost::noncopyable
 {
 public:
+    sqlite_serializer()
+        :name_generator_(150)
+    {}
+
     void run(gce::stackful_actor self, const std::string dir)
     {
          if(!create_dir(dir))
@@ -26,7 +30,7 @@ public:
          while (true)
          {
              expired_item item;
-             gce::aid_t sender = self->match("save").recv(item);
+             gce::aid_t sender = self->match("save").recv(item.transcation_id, item.data);
              if(name_generator_.expire())
              {  
                  sqlite_enginer_.end_transaction();

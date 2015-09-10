@@ -31,23 +31,8 @@ public:
         boost::shared_ptr<p::xs2ds_entity_req> req;
         while (true)
         {   
-            //gce::aid_t sender = self->match(XS2DS_ENTITY_REQ).recv(req);
-            gce::message msg;
-            gce::aid_t sender = self.recv(msg);
-            if( gce::aid_nil == sender)
-                continue;
-            
-            gce::match_t type = msg.get_type();
-            if(XS2DS_ENTITY_REQ == type.val_)
-            {   
-                msg >> req;
-                io_service.post(boost::bind(&dbreader::load, this, req));
-            }
-            else if(DS2XS_ENTITY_ACK == type.val_)
-            {
-                msg >> req;
-            }
-
+            gce::aid_t sender = self->match(XS2DS_ENTITY_REQ).recv(req);
+            io_service.post(boost::bind(&dbreader::load, this, req));
         }
 
     }

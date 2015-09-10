@@ -122,7 +122,7 @@ private:
         expired_map_.insert(std::make_pair(removed_guid, item));
 
         // ·¢ËÍ¸ø±£´æactor
-        self->send(saver_, "save", item);
+        self->send(saver_, "save", item.transcation_id, item.data);
     }
 
     void on_set(gce::stackful_actor self, boost::shared_ptr<p::xs2ds_entity_req> req, gce::aid_t sender)

@@ -2,6 +2,7 @@
 #include "config.hpp"
 #include <boost/bind.hpp>
 #include "dbreader.hpp"
+#include "sqlite_serializer.hpp"
 
 void main_actor(gce::stackful_actor self, config& cfg)
 {
@@ -10,11 +11,14 @@ void main_actor(gce::stackful_actor self, config& cfg)
         dbreader reader(self);
         gce::aid_t db_reader_actor = spawn(self, boost::bind(&dbreader::run, &reader, _arg1, cfg), gce::monitored);
 
+        sqlite_serializer serializer;
+        gce::aid_t saver = spawn(self, boost::bind(&sqlite_serializer::run, &serializer, _arg1, "binary"), gce::monitored);
         boost::shared_ptr<p::xs2ds_entity_req> req(new p::xs2ds_entity_req);
         req->req_guid = 1;
         self->send(db_reader_actor, XS2DS_ENTITY_REQ, req);
         gce::message msg;
         self.recv(msg);
+        self->recv(gce::exit);
     }
     catch (std::exception& ex)
     {
@@ -44,7 +48,7 @@ void timeout_actor(gce::stackful_actor self, gce::aid_t guid_actor)
 void config_saver(gce::stackful_actor self, config cfg)
 {
     try
-    {   
+    {
         uint32_t seed = 0;
         uint64_t index = 0;
         while (true)
@@ -55,7 +59,7 @@ void config_saver(gce::stackful_actor self, config cfg)
             saveConfig("config.xml", cfg);
         }
     }
-    catch(std::exception& ex)
+    catch (std::exception& ex)
     {
         std::cerr << "failed to save config: " << ex.what() << std::endl;
     }
