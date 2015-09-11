@@ -73,7 +73,7 @@ private:
     }
 
     void db_load_thread(boost::asio::io_service* srv, gce::aid_t)
-    {
+    {   
         conn_.reset(new mysqlpp::Connection);
         conn_->set_option(new mysqlpp::SetCharsetNameOption("utf8"));
         if (!connect_to_db(*conn_))
@@ -92,7 +92,8 @@ private:
     }
 
     bool connect_to_db(mysqlpp::Connection& conn)
-    {
+    {   
+        boost::mutex::scoped_lock lock(mu_);    // 还的他吗的加mutex
         return connect_to_db(conn, cfg_.db_ip, cfg_.db_port,
             cfg_.db_user, cfg_.db_pwd, cfg_.db_name);
     }
@@ -126,6 +127,7 @@ private:
 
 private:
     config  cfg_;
+    boost::mutex mu_;
     boost::thread_specific_ptr<mysqlpp::Connection> conn_;  // 线程本地存储
 };
 
