@@ -3,9 +3,10 @@
     <config>
         <seed>7384</seed>
         <index>7384</index>
-        <addr>tcp://127.0.0.1:20000</addr>
-        <context_name>guidsys</context_name>
-        <service_name>guidsys</service_name>
+        <addr>tcp://127.0.0.1:20001</addr>
+        <context_name>cachesys</context_name>
+        <service_name>cachesys</service_name>
+		<cache_size>1000</cache_size>
         <db_name>test</db_name>
         <db_user>root</db_user>
         <db_pwd>root</db_pwd>
