@@ -10,7 +10,7 @@ struct config
     std::string addr;
     std::string context_name;
     std::string service_name;
-
+    uint64_t    cache_size;
     std::string db_name;
     std::string db_user;
     std::string db_pwd;
@@ -31,6 +31,7 @@ namespace zen
         out["addr"](value.addr);
         out["context_name"](value.context_name);
         out["service_name"](value.service_name);
+        out["cache_size"](value.cache_size);
 
         out["db_name"](value.db_name);
         out["db_user"](value.db_user);
@@ -48,6 +49,7 @@ namespace zen
         rv = in["addr"](value.addr) && rv;
         rv = in["context_name"](value.context_name)  && rv;
         rv = in["service_name"](value.service_name)  && rv;
+        rv = in["cache_size"](value.cache_size)  && rv;
 
         rv = in["db_name"](value.db_name) && rv;
         rv = in["db_user"](value.db_user) && rv;

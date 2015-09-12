@@ -5,7 +5,7 @@
 #include <boost/filesystem.hpp>
 
 #define BINARY_DIR  "./binary/"
-#define CREATE_RECORD_TABLE "create table record (guid INTEGER, stream_size INTEGER, stream BLOB, optype INTEGER, transaction_id INTEGER)"
+#define CREATE_RECORD_TABLE "create table record (guid INTEGER, stream_size INTEGER, stream BLOB, optype INTEGER, transaction_id INTEGER, PRIMARY KEY (\"guid\"))"
 #define CREATE_RECORD_INDEX "create index index_guid on record(guid)"
 
 class sqlite_serializer

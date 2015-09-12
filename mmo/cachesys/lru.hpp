@@ -6,6 +6,10 @@ class lru
     :boost::noncopyable
 {
 public:
+    lru()
+        :max_size_(0)
+    {}
+
     lru(uint64_t max_size)
         :max_size_(max_size)
     {

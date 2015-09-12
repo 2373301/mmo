@@ -3,10 +3,12 @@
 #include "lru.hpp"
 #include "counter.hpp"
 
-class entityhandler 
-    : boost::noncopyable
+class entity_handler 
+    : public boost::noncopyable
 {
 public:
+    entity_handler() {}
+
     void run(gce::stackful_actor self, std::string& service_name, gce::aid_t& saver, uint64_t cache_size, gce::aid_t& dbloader)
     {   
         stopped_ = false;
@@ -29,13 +31,13 @@ public:
                 if(type.get == req->req_type)
                 {
                     // get
-                    spawn(self, boost::bind(&on_get, this, _arg1, req, sender), gce::linked);
+                    spawn(self, boost::bind(&entity_handler::on_get, this, _arg1, req, sender), gce::linked);
 
                 }
                 else if(type.set == req->req_type)
                 {
                     // set
-                    spawn(self, boost::bind(&on_set, this, _arg1, req, sender), gce::linked);
+                    spawn(self, boost::bind(&entity_handler::on_set, this, _arg1, req, sender), gce::linked);
                 }
             }
 

@@ -3,6 +3,7 @@
 #include <boost/bind.hpp>
 #include "dbreader.hpp"
 #include "sqlite_serializer.hpp"
+#include "entityhandler.hpp"
 
 void main_actor(gce::stackful_actor self, config& cfg)
 {
@@ -13,6 +14,11 @@ void main_actor(gce::stackful_actor self, config& cfg)
 
         sqlite_serializer serializer;
         gce::aid_t saver = spawn(self, boost::bind(&sqlite_serializer::run, &serializer, _arg1, "binary"), gce::monitored);
+
+        entity_handler handler;
+        gce::aid_t entity_aid = spawn(self, boost::bind(&entity_handler::run, 
+            &handler, _arg1, cfg.service_name, saver, cfg.cache_size, db_reader_actor), gce::monitored);
+
         boost::shared_ptr<p::xs2ds_entity_req> req(new p::xs2ds_entity_req);
         req->req_guid = 1;
         self->send(db_reader_actor, XS2DS_ENTITY_REQ, req);

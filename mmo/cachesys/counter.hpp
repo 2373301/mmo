@@ -23,7 +23,7 @@ struct counter
 
         uint64_t n = 0;
         n = start_time_;
-        n << 32;
+        n = n << 32;
         n += index_;
 
         return n;
