@@ -81,6 +81,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="test_cachesys.hpp" />
     <ClInclude Include="test_guidsys.hpp" />
   </ItemGroup>
   <ItemGroup>
