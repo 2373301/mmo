@@ -28,6 +28,7 @@ static std::size_t const test_count = 1;
 
 #include <boost/timer/timer.hpp>
 #include "test_guidsys.hpp"
+#include "test_cachesys.hpp"
 
 
 int main(int argc, char * argv[])
@@ -35,11 +36,13 @@ int main(int argc, char * argv[])
   try
   {
 
-    gce::guidsys_ut::run();
+    //gce::guidsys_ut::run();
+    gce::cachesys_ut::run();
   }
   catch (std::exception& ex)
   {
     std::cerr << ex.what() << std::endl;
   }
+
   return 0;
 }
