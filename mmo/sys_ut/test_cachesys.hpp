@@ -1,31 +1,21 @@
-///
-/// Copyright (c) 2009-2014 Nous Xiong (348944179 at qq dot com)
-///
-/// Distributed under the Boost Software License, Version 1.0. (See accompanying
-/// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-///
-/// See https://github.com/nousxiong/gce for latest version.
-///
-
 #include <gce/detail/scope.hpp>
 #include "opcode.h"
 #include "internal/msg_guid.adl.h"
 #include "internal/msg_cache.adl.h"
+#include <iostream>
+#include <gce/log/all.hpp>
 
 namespace gce
 {
 class cachesys_ut
 {
+    static std::size_t const test_count = 1 << 20;
+
 public:
   static void run()
   {
     std::cout << "cachesys_ut begin." << std::endl;
-    for (std::size_t i=0; i<test_count; ++i)
-    {
-      test_common();
-      if (test_count > 1) std::cout << "\r" << i;
-    }
-    if (test_count > 1) std::cout << std::endl;
+    test_common();
     std::cout << "cachesys_ut end." << std::endl;
   }
 
@@ -49,15 +39,17 @@ private:
       connect(base2, "cachesys", "tcp://127.0.0.1:20001");
       base2.sleep_for(millisecs(100));
 
-      for(int i = 0; i < 1; i++)
+      for(int i = 0; i < test_count; i++)
       {
           p::xs2ds_entity_req req;
           req.req_guid = 1;
           base2->send(guidsys, XS2DS_ENTITY_REQ, req);
           p::ds2xs_entity_ack ack;
           base2->match(DS2XS_ENTITY_ACK).recv(ack);
-          std::cout << "received, index: " << ack.data << std::endl;
+          //std::cout << "received, index: " << ack.data << std::endl;
+          //GCE_INFO(lg) << ack.data<< "\n";
       }
+       GCE_INFO(lg) << test_count<< "\n";
     }
     catch (std::exception& ex)
     {

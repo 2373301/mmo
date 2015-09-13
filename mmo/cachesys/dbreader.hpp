@@ -32,12 +32,12 @@ public:
         while (true)
         {   
             gce::aid_t sender = self->match(XS2DS_ENTITY_REQ).recv(req);
-            io_service.post(boost::bind(&dbreader::load, this, req));
+            io_service.post(boost::bind(&dbreader::load, this, req, sender));
         }
 
     }
 
-    void load(boost::shared_ptr<p::xs2ds_entity_req> req)
+    void load(boost::shared_ptr<p::xs2ds_entity_req> req, gce::aid_t sender)
     {      
            std::string table_name;
            get_table_name(req->req_guid, table_name);
@@ -48,7 +48,7 @@ public:
             return;
 
            req->data.insert(0, res.at(0).at(1).data(), res.at(0).at(1).length());
-           send_back(req);
+           send_back(req, sender);
     }
 
     bool get_table_name(uint64_t guid, std::string& name)
@@ -58,17 +58,18 @@ public:
     }
 
 private:
-    void send_back(boost::shared_ptr<p::xs2ds_entity_req>& req)
+    void send_back(boost::shared_ptr<p::xs2ds_entity_req>& req, gce::aid_t sender)
     {
         gce::io_service_t& ios = base_t::get_strand().get_io_service();
-        ios.post(boost::bind(&dbreader::pri_send_back, this, req));
+        ios.post(boost::bind(&dbreader::pri_send_back, this, req, sender));
     }
 
-    void pri_send_back(boost::shared_ptr<p::xs2ds_entity_req>& req)
+    void pri_send_back(boost::shared_ptr<p::xs2ds_entity_req>& req, gce::aid_t sender)
     {
         gce::message m;
         m.set_type(DS2XS_ENTITY_ACK);
         m << req;
+        m << sender;
         base_t::send2actor(m);
     }
 

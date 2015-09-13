@@ -82,8 +82,8 @@ private:
             }
 
             // ÐèÒª db ¼ÓÔØ
-            gce::resp_t res = self->request(dbloader_, XS2DS_ENTITY_REQ, req);
-            self->respond(res, req->data);
+            self->send(dbloader_, XS2DS_ENTITY_REQ, req);
+            self->match(DS2XS_ENTITY_ACK).recv(req);
             if(!req->data.empty())
             {
                 existed = req;

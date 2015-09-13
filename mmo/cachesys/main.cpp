@@ -19,11 +19,18 @@ void main_actor(gce::stackful_actor self, config& cfg)
         gce::aid_t entity_aid = spawn(self, boost::bind(&entity_handler::run, 
             &handler, _arg1, cfg.service_name, saver, cfg.cache_size, db_reader_actor), gce::monitored);
 
-        boost::shared_ptr<p::xs2ds_entity_req> req(new p::xs2ds_entity_req);
-        req->req_guid = 1;
-        self->send(db_reader_actor, XS2DS_ENTITY_REQ, req);
+        boost::shared_ptr<p::xs2ds_entity_req> req;
+//         req->req_guid = 1;
+//         self->send(db_reader_actor, XS2DS_ENTITY_REQ, req);
         gce::message msg;
-        self.recv(msg);
+        gce::aid_t sender;
+        while (true)
+        {
+            self.recv(msg);
+            msg >> req;
+            msg >> sender;
+            self->send(sender, DS2XS_ENTITY_ACK, req);
+        }
         self->recv(gce::exit);
     }
     catch (std::exception& ex)
