@@ -6,9 +6,11 @@
 #include "entityhandler.hpp"
 
 void main_actor(gce::stackful_actor self, config& cfg)
-{
+{   
+    gce::log::logger_t& logger = self.get_context().get_logger();
+
     try
-    {
+    {   
         dbreader reader(self);
         gce::aid_t db_reader_actor = spawn(self, boost::bind(&dbreader::run, &reader, _arg1, cfg), gce::monitored);
 
@@ -20,22 +22,31 @@ void main_actor(gce::stackful_actor self, config& cfg)
             &handler, _arg1, cfg.service_name, saver, cfg.cache_size, db_reader_actor), gce::monitored);
 
         boost::shared_ptr<p::xs2ds_entity_req> req;
-//         req->req_guid = 1;
-//         self->send(db_reader_actor, XS2DS_ENTITY_REQ, req);
         gce::message msg;
         gce::aid_t sender;
         while (true)
-        {
-            self.recv(msg);
-            msg >> req;
-            msg >> sender;
-            self->send(sender, DS2XS_ENTITY_ACK, req);
+        { 
+            gce::aid_t s = self.recv(msg);
+            gce::match_t id = msg.get_type();
+
+            // 接收的是 db loader 返回的消息
+            if(DS2DS_ENTITY_LOAD_ACK == id.val_)
+            {   
+                msg >> req;
+                msg >> sender;
+                self->send(entity_aid, DS2DS_ENTITY_LOAD_ACK, req, sender);
+            }
+            else if(gce::exit == id)
+            {   
+                GCE_ERROR(logger) << "sub actor exit: " << s << "\n";
+                break;
+            }
+            
         }
-        self->recv(gce::exit);
     }
     catch (std::exception& ex)
     {
-        std::cerr << "guid server except: " << ex.what() << std::endl;
+         GCE_ERROR(logger) << "main_actor except: " << ex.what() << "\n";
     }
 }
 

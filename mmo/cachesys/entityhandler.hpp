@@ -25,19 +25,22 @@ public:
             while (!stopped_)
             {
                 boost::shared_ptr<p::xs2ds_entity_req> req(new p::xs2ds_entity_req);
-                gce::aid_t sender = self->match(XS2DS_ENTITY_REQ).recv(*req);
-
-                p::entity_req_type type;
-                if(type.get == req->req_type)
-                {
-                    // get
-                    spawn(self, boost::bind(&entity_handler::on_get, this, _arg1, req, sender), gce::linked);
-
+                //gce::aid_t sender = self->match(XS2DS_ENTITY_REQ, DS2DS_ENTITY_LOAD_ACK).recv(*req);
+                gce::pattern ptn(XS2DS_ENTITY_REQ, DS2DS_ENTITY_LOAD_ACK);
+                gce::message msg;
+                gce::aid_t sender = self.recv(msg, ptn);
+                gce::match_t id = msg.get_type();
+                gce::aid_t client;
+                if (XS2DS_ENTITY_REQ == id.val_)
+                {   
+                    msg >> *req;
+                    on_get(self, req, sender);
                 }
-                else if(type.set == req->req_type)
+                else if(DS2DS_ENTITY_LOAD_ACK == id.val_)
                 {
-                    // set
-                    spawn(self, boost::bind(&entity_handler::on_set, this, _arg1, req, sender), gce::linked);
+                     msg >> req;
+                     msg >> client;
+                     on_load(self, req, client);
                 }
             }
 
@@ -51,7 +54,50 @@ public:
     }
  
 private:
-    void on_get(gce::stackful_actor self, boost::shared_ptr<p::xs2ds_entity_req> req, gce::aid_t sender)
+    void on_load(gce::stackful_actor& self, boost::shared_ptr<p::xs2ds_entity_req>& req, gce::aid_t& client)
+    {
+        p::ds2xs_entity_ack ack;
+        ack.req_guid = req->req_guid;
+        ack.req_type = req->req_type;
+        do 
+        {
+            if (req->data.empty())
+            {    // db 加载失败
+                ack.result = 1;
+                break;
+            }
+
+            entity_map_.insert(std::make_pair(ack.req_guid, req));
+            ack.data = req->data; // 复制
+       
+            uint64_t removed_guid = 0;
+            if (!lru_.update(req->req_guid, removed_guid))
+                break;
+
+            auto it = entity_map_.find(removed_guid);
+            if (it == entity_map_.end())
+                break;
+
+            expired_item item;
+            item.transcation_id = counter_.now();  // id 用于比较, 以防重复删除,或者误删
+            item.data->data.swap(it->second->data);
+            entity_map_.erase(it);
+            auto expired_it = expired_map_.find(removed_guid);
+            if (expired_it != expired_map_.end())
+            {
+                expired_map_.erase(expired_it);
+            }
+            expired_map_.insert(std::make_pair(removed_guid, item));
+
+            // 过期的, 发送给保存actor
+            self->send(saver_, DS2DS_ENTITY_SERIALIZE_REQ, item.transcation_id, item.data);
+
+        } while (false);
+
+        self->send(client, DS2XS_ENTITY_ACK, ack);
+    }
+
+    void on_get(gce::stackful_actor& self, boost::shared_ptr<p::xs2ds_entity_req>& req, gce::aid_t& sender)
     {   
         p::ds2xs_entity_ack ack;
         ack.req_guid = req->req_guid;
@@ -80,54 +126,16 @@ private:
                 need_reg = true;
                 break;
             }
-
+                
             // 需要 db 加载
-            self->send(dbloader_, XS2DS_ENTITY_REQ, req);
-            self->match(DS2XS_ENTITY_ACK).recv(req);
-            if(!req->data.empty())
-            {
-                existed = req;
-                entity_map_.insert(std::make_pair(req_guid, existed));
-                need_reg = true;
-                break;
-            }
-
-            // db 加载失败
-           ack.result = 1;
-           self->send(sender, DS2XS_ENTITY_ACK, ack);
-           return;
+            self->send(dbloader_, DS2DS_ENTITY_LOAD_REQ, req, sender);
+            return; // 返回
 
         } while (false);
 
-        ack.data = existed->data; // 复制
-        self->send(sender, DS2XS_ENTITY_ACK, ack);
-        if( !need_reg)
-            return;
-
-        uint64_t removed_guid = 0;
-        if (!lru_.update(req_guid, removed_guid))
-            return;
-
-        auto it = entity_map_.find(removed_guid);
-        if (it == entity_map_.end())
-            return;
-        
-        expired_item item; 
-        item.transcation_id = counter_.now();  // id 用于比较, 方式误删
-        item.data->data.swap(it->second->data);
-        entity_map_.erase(it);
-        auto expired_it = expired_map_.find(removed_guid);
-        if (expired_it != expired_map_.end())
-        {
-            expired_map_.erase(expired_it);
-        }
-        expired_map_.insert(std::make_pair(removed_guid, item));
-
-        // 发送给保存actor
-        self->send(saver_, "save", item.transcation_id, item.data);
     }
 
-    void on_set(gce::stackful_actor self, boost::shared_ptr<p::xs2ds_entity_req> req, gce::aid_t sender)
+    void on_set(gce::stackful_actor& self, boost::shared_ptr<p::xs2ds_entity_req>& req, gce::aid_t& sender)
     {
         
     }

@@ -30,7 +30,7 @@ public:
          while (true)
          {
              expired_item item;
-             gce::aid_t sender = self->match("save").recv(item.transcation_id, item.data);
+             gce::aid_t sender = self->match(DS2DS_ENTITY_LOAD_REQ).recv(item.transcation_id, item.data);
              if(name_generator_.expire())
              {  
                  sqlite_enginer_.end_transaction();

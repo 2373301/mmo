@@ -31,7 +31,8 @@ public:
         boost::shared_ptr<p::xs2ds_entity_req> req;
         while (true)
         {   
-            gce::aid_t sender = self->match(XS2DS_ENTITY_REQ).recv(req);
+            gce::aid_t sender;
+            self->match(DS2DS_ENTITY_LOAD_REQ).recv(req, sender);
             io_service.post(boost::bind(&dbreader::load, this, req, sender));
         }
 
@@ -67,7 +68,7 @@ private:
     void pri_send_back(boost::shared_ptr<p::xs2ds_entity_req>& req, gce::aid_t sender)
     {
         gce::message m;
-        m.set_type(DS2XS_ENTITY_ACK);
+        m.set_type(DS2DS_ENTITY_LOAD_ACK);
         m << req;
         m << sender;
         base_t::send2actor(m);
