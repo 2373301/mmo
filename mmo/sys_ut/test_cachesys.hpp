@@ -9,7 +9,7 @@ namespace gce
 {
 class cachesys_ut
 {
-    static std::size_t const test_count = 1 << 20;
+    static std::size_t const test_count = 1 <<  5;
 
 public:
   static void run()
@@ -47,9 +47,8 @@ private:
           p::ds2xs_entity_ack ack;
           base2->match(DS2XS_ENTITY_ACK).recv(ack);
           //std::cout << "received, index: " << ack.data << std::endl;
-          GCE_INFO(lg) << ack.data<< "\n";
+          GCE_INFO(lg) << i << " "<< ack.data << "\n";
       }
-       GCE_INFO(lg) << test_count<< "\n";
     }
     catch (std::exception& ex)
     {

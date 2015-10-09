@@ -24,8 +24,6 @@ public:
 
             while (!stopped_)
             {
-                boost::shared_ptr<p::xs2ds_entity_req> req(new p::xs2ds_entity_req);
-                //gce::aid_t sender = self->match(XS2DS_ENTITY_REQ, DS2DS_ENTITY_LOAD_ACK).recv(*req);
                 gce::pattern ptn(XS2DS_ENTITY_REQ, DS2DS_ENTITY_LOAD_ACK);
                 gce::message msg;
                 gce::aid_t sender = self.recv(msg, ptn);
@@ -33,11 +31,15 @@ public:
                 gce::aid_t client;
                 if (XS2DS_ENTITY_REQ == id.val_)
                 {   
+                    // 自个申请, 用值
+                    boost::shared_ptr<p::xs2ds_entity_req> req(new p::xs2ds_entity_req);
                     msg >> *req;
                     on_get(self, req, sender);
                 }
                 else if(DS2DS_ENTITY_LOAD_ACK == id.val_)
-                {
+                {   
+                     // 不需申请, 用指针
+                     boost::shared_ptr<p::xs2ds_entity_req> req;
                      msg >> req;
                      msg >> client;
                      on_load(self, req, client);
@@ -105,7 +107,6 @@ private:
 
         uint64_t req_guid = req->req_guid;
         boost::shared_ptr<p::xs2ds_entity_req> existed;
-        bool need_reg = false;
         do 
         {   
             // cache里有的
@@ -123,7 +124,6 @@ private:
                 existed = expired_it->second.data;
                 entity_map_.insert(std::make_pair(req_guid, existed));
                 expired_map_.erase(expired_it);
-                need_reg = true;
                 break;
             }
                 
@@ -133,11 +133,44 @@ private:
 
         } while (false);
 
+
+        // 返回消息
+        ack.data = existed->data;
+        self->send(sender, DS2XS_ENTITY_ACK, ack);
     }
 
     void on_set(gce::stackful_actor& self, boost::shared_ptr<p::xs2ds_entity_req>& req, gce::aid_t& sender)
     {
-        
+        p::ds2xs_entity_ack ack;
+        ack.req_guid = req->req_guid;
+        ack.req_type = req->req_type;
+
+        uint64_t req_guid = req->req_guid;
+        do 
+        {   
+            if( req->data.empty())
+            {
+                ack.result = 1;
+                break;
+            }
+
+            // cache里有的
+            auto it = entity_map_.find(req_guid);
+            if (it != entity_map_.end())
+            {
+                it->second = req;
+            }
+            else
+            {
+                entity_map_.insert(std::make_pair(req_guid, req));
+            }
+
+            // 保存, 0 代表非过期的数据
+            self->send(saver_, DS2DS_ENTITY_SERIALIZE_REQ, 0, req->data);
+        } while (false);
+
+        // 返回消息
+        self->send(sender, DS2XS_ENTITY_ACK, ack);
     }
 
 private:
